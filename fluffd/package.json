@@ -5,7 +5,8 @@
   "main": "fluffd.js",
   "dependencies": {
     "noble": "^1.7.0",
-    "winston": "^2.3.0"
+    "winston": "^2.3.0",
+    "xpc-connection": "^0.1.4"
   },
   "author": "Jeija",
   "license": "MIT"

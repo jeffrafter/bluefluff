@@ -2,7 +2,7 @@
  * fluffd: Furby Bluetooth Low Energy / Bluetooth Smart Communication Server:
  * Connect to Furby, start fluff server:
  * node fluffd.js
- * 
+ *
  * Connect to Furby, show all BLE services and characteristics and exit:
  * node main.js introspect
  *
@@ -42,7 +42,7 @@ function startCommand(name, post_data, res) {
 	}
 
 	// Send command to all connected furbies
-	if (!("target" in post_data) || post_data.target === "") {
+	if (!("target" in post_data.params) || post_data.params.target === "") {
 		// Multiple furbies: Collect results from all furbies and respond
 		let multiple_count = 0;
 		let multiple_errstring = "";
@@ -61,10 +61,10 @@ function startCommand(name, post_data, res) {
 
 	// Send command to a single one of the connected furbies
 	} else {
-		winston.log("verbose", "Sending " + name + " command to single Furby " + post_data.target + ", params: " + post_data.params);
+		winston.log("verbose", "Sending " + name + " command to single Furby " + post_data.params.target + ", params: " + post_data.params);
 
-		if (post_data.target in furbies) {
-			fluffaction.execute(furbies[post_data.target], name, post_data.params, respond);
+		if (post_data.params.target in furbies) {
+			fluffaction.execute(furbies[post_data.params.target], name, post_data.params, respond);
 		} else {
 			winston.log("warn", "could not find target");
 			res.end("error: could not find target");
@@ -80,6 +80,8 @@ function parseCommand(name, req, res) {
 		let post_data;
 		try {
 			post_data = JSON.parse(POST);
+			console.log("*************************************")
+			console.log(post_data)
 			startCommand(name, post_data, res);
 		} catch(e) {
 			winston.log("warn", "Could not parse HTTP command: " + e);
@@ -102,6 +104,9 @@ http.createServer(function(req, res) {
 			parseCommand(query[1], req, res);
 		else
 			res.end();
+	} else if (query[0] === "uuids") {
+		res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin" : "*"});
+		res.end(JSON.stringify(Object.keys(furbies)));
 	} else if (query[0] === "list") {
 		res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin" : "*"});
 		res.end(JSON.stringify(fluffaction.list()));

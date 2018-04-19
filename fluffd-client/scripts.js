@@ -10,7 +10,7 @@ function fluffd_url(target) {
 
 function sendcmd() {
 	// Collect parameter data
-	var params = {};
+	var params = {"target": getTarget()};
 	$(".param").each(function() {
 		var param = $(this).children(".paramname").children(".param_technical").text();
 		params[param] = $(this).children(".param_value").val();
@@ -40,14 +40,22 @@ function handle_button_click(cmd) {
 		var button = commands[cmd].buttons[$(this).data("buttonid")];
 		console.log(button);
 
+		var params = button.params;
+		params["target"] = getTarget();
+
 		// For now: Always send all commands to all furbies connected to fluffd
 		$.post(fluffd_url("cmd" + "/" + button.cmd), JSON.stringify({
-			params : button.params
+			params : params
 		}), function(res) {
 			if (res != "ok")
 				alert(res);
 		});
 	});
+}
+
+function getTarget() {
+	var $uuid = $("#uuids")
+	return $uuid.val()
 }
 
 // New action in the left panel selected
@@ -116,4 +124,18 @@ $(function() {
 	update_cmdlist();
 	$("#fluffd_refresh").click(update_cmdlist);
 	$("#sendbutton").click(sendcmd);
+
+	$.get(fluffd_url("uuids"), function(res) {
+		if (res != "ok") {
+			var json = JSON.parse(res)
+			var $uuids = $("#uuids")
+			$uuids.empty()
+			$uuids.append("<option value=''>All</option>")
+			for (var i = 0; i < json.length; i++) {
+				var uuid = json[i]
+				$uuids.append("<option value='" + uuid + "'>" + uuid + "</option>")
+			}
+		}
+	});
+
 });
